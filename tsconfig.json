@@ -1,0 +1,15 @@
+{
+    "compilerOptions":
+    {
+        "jsx": "react",
+        "sourceMap": true,
+        "target": "es6",
+        "lib": ["es5", "es6", "dom"],
+        "moduleResolution": "node"
+    },
+    "exclude":
+    [
+        "node_modules",
+        "dist"
+    ]
+}

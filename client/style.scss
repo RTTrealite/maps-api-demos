@@ -1,0 +1,42 @@
+// Copyright (c) 2014-2018, Spookfish Innovations Pty Ltd, Australia. All rights reserved.
+
+#map, body {
+    width:100vw;
+    height:100vh;
+    margin:0;
+    padding:0;
+    overflow:hidden;
+    font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+}
+
+.buttons {
+    pointer-events: none;
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    padding:30px;
+    text-align: center;
+    z-index:500;
+}
+
+.button {
+    pointer-events: all;
+    display:inline-block;
+    margin:10px;
+    border: none;
+    background-color: white;
+    border-radius: 50px;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor:pointer;
+    &.selected {
+        border: cornflowerblue 4px solid;
+        background-color: #0072a7;
+        color: white;
+    }
+}
