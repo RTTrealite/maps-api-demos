@@ -20,7 +20,7 @@
     "express": "^4.16.3",
     "file-loader": "^2.0.0",
     "node-sass": "^4.9.3",
-    "nodemon": "^1.18.4",
+    "nodemon": "^1.18.8",
     "request": "^2.88.0",
     "sass-loader": "^7.1.0",
     "style-loader": "^0.23.0",
