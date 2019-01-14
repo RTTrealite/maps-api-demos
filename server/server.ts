@@ -4,6 +4,9 @@ const express = require('express');
 const request = require('request');
 const ReadWriteLock = require('rwlock');
 const cors = require('cors');
+import { compositeProductService } from './compositeProductService'
+import { urlCreator } from './urlCreator'
+import { IToken } from '../shared/IToken';
 
 const app = express();
 
@@ -11,6 +14,10 @@ const app = express();
 // credentials key in the Spookfish Account Portal
 const clientId = '<YOUR CLIENT ID HERE>';
 const clientSecret = '<YOUR CLIENT SECRET HERE>';
+// This is the API Key obtained when you created an API 
+const apiKey = '<YOUR API KEY HERE>';
+const apiBaseUrl = 'https://api-dev.spookfish.com/api/imagery/v1/';
+const authBaseUrl = 'https://login.spookfish.com/identity/';
 
 app.use(cors());
 
@@ -22,13 +29,23 @@ app.get('/api/token', (req, res) => {
     getClientCredentialToken(req).then((token) => {
         res.send(token);
     }).catch(error => {
-        console.error(error);
+        res.status(401);
+        res.send(error);
     });
+});
+
+app.get('/api/config', (req, res) => {
+    res.send({ apiKey, apiBaseUrl });
+});
+
+app.get('/api/products', async (req, res) => {
+    const urlFunc = await urlCreator(req, apiBaseUrl, getClientCredentialToken)
+    res.send(await compositeProductService.getCompositeProducts(urlFunc));
 });
 
 app.listen(9090, () => console.log('API listening on port 9090!'));
 
-function getClientCredentialToken(req) {
+function getClientCredentialToken(req): Promise<IToken> {
     // Store a single active access token at a time.
     return new Promise((resolve, reject) => {
         let lock = req.app.get('tokenLock');
@@ -64,7 +81,7 @@ function clientCredentialRequest(req, resolve, reject) {
 
     // Using the client credentials key, you need to authenticate to get a short lived bearer token with the requested
     // scopes which can then be used to make requests to the API.
-    request.post('https://login.spookfish.com/identity/connect/token', {
+    request.post(`${authBaseUrl}connect/token`, {
         'form': { 
             // Grant type should always be client credentials in this case
             'grant_type': 'client_credentials',
@@ -80,7 +97,7 @@ function clientCredentialRequest(req, resolve, reject) {
             reject('HTTP error: ' + error);
         } else {
             let response = JSON.parse(body);
-            
+
             if (typeof(response.error) !== 'undefined') {
                 reject('Authentication error: ' + response.error);
             } else {

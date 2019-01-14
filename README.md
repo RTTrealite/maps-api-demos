@@ -75,6 +75,30 @@ For example, you may have user 'Admin', who requires access to api:imagery and a
 
 Most of the client implementation is the same between API Key and Client Credentials (i.e. create the leaflet app, register a layer etc.). Even the URL is very similar, instead of passing an api_key parameter, you pass an access_token parameter. And you don't know the API key ahead of time, you need to make a request to your server to get a token. The only other note to make about this is that we get the expiry time of the current token in seconds, so we register a timeout to be called when the token expires to go and grab a new one.
 
+# Composite Product Selector
+
+There is a date selector which demos how to get all the available imagery sets for a particular area. Most of the work is done in the imagery set service on the server side.
+
+## Demo bounds
+
+We are limiting the composite products displayed to be those that cover Perth, and therefore have locked the map to show the region around Perth. There are further considerations when implementing this over a larger area, such as checking if these products still cover the users current view, which are explained in more detail in the clients section.
+
+## Server implementation
+
+All the work for retrieving the available dates is done in compositeProductService.ts. There are a few important steps:
+1. In the call to getCompositeProducts, we are caching the results. There is actually a bit of work retrieving all the required information (which in this demo we have reduced by just looking at Perth), so once you have it you would want to cache this for a certain amount of time and share it amongst your clients.
+1. The getAllCompositeProducts function makes the initial call to get summary information about all composite products.
+1. The composite products retrieved in the call above has the bounds that the composite product applies to. In filterToPerthOnly, we check that the bounds of the composite product contains Perth. Notice that in this demo we are only looking at constraintType === 'Only'. This is because these composite products likely only have the bounds set to just the area captured in the survey and no more, as it will have only imagery taken on that day. constraintType === 'UpTo' would have the bounds of all composite products taken up to that date, which would be pretty much Australia (which isn't what we are going for in the demo).
+1. Once we have this filtered list of composite products, we get the more detailed bounds information about that composite product. This is a multi-polygon containing the bounds of the actual imagery. Although we aren't using it in this demo, this information is more useful in the client as explained below.
+
+## Client implementation
+
+The goal in the client would be to display to the user a list of the composite products that are applicable to the location the user is currently viewing on the map.
+
+1. Best is probably the best place to start. It will show the user the best imagery for their given location, and automatically choose this as the user scrolls around.
+1. Given the composite product information from the server, with the detailed actual bounds of the composite product, you would check which ones contain the users location, and display that as an option. Note: the demo doesn't do this, as it is locked to Perth and has already been filtered on the server to contain only composite products applicable there.
+1. As the user scrolls around, you would need to check again what composite products match the location. You should limit the amount of times this is done per second so that it doesn't become a performance overhead.
+
 # Other Considerations
 
 ## HTTP 429: Rate limiting

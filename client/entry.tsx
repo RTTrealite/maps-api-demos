@@ -8,87 +8,156 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { AuthenticationMethods } from './authTypes';
 import { MapTypeButton } from './MapType.button';
+import { CompositeProductPickerComponent } from './CompositeProductPicker.component';
+import { httpClient } from './httpClient';
+import { IToken } from '../shared/IToken';
+import { ICompositeProductDetails } from '../shared/ICompositeProduct';
+import { ILimits } from '../shared/ILimits';
 
 export class Map extends React.PureComponent<IMapProps, IMapState> {
     private map: L.Map;
     private layer: L.TileLayer
-    private readonly apiKey = '<YOUR API KEY HERE>';
-    private readonly apiBaseUrl = 'https://api.spookfish.com/api/imagery/v1/';
-    // You can change this to get imagery up to specific dates, but in this case get the latest
-    private readonly imageryProductId = 'Best';
+    private readonly serverUrl = 'http://localhost:9090/api';
 
     constructor(props: IMapProps) {
         super(props);
-        this.state = { authenticationMethod: 'ApiKey', accessToken: undefined };
+        this.state = { 
+            authenticationMethod: 'ApiKey',
+            accessToken: undefined,
+            apiKey: undefined,
+            apiBaseUrl: undefined,
+            products: [],
+            productsLoaded: false,
+            selectedProduct: undefined,
+            limits: undefined
+        };
     }
 
     componentDidMount() {
-        this.getClientCredentialsToken();
-        this.map = L.map('map', {center: new L.LatLng(-31.950293, 115.8901672), zoom: 18})
+        this.map = L
+            .map('map', {
+                center: new L.LatLng(-31.958238, 115.855293), 
+                zoom: 18,
+                // With the composite product selector dropdown, we aren't tracking the location in the demo and updating it, so restrict the
+                // map to a section where those composite products make sense.
+                maxBounds: [
+                    [-31.973207, 115.836326], // Southwest
+                    [-31.941969, 115.891474] // Northeast
+                ],
+                maxBoundsViscosity: 1
+            })
             .on('click', this.onMapClicked);
-        this.setupLayer();
+        // Don't await these, let them fire off asynchronously so we don't hold up rendering
+        this.getConfig();
     }
 
     render() {
         return (
             <>
                 <div id="map"></div>
-                <div className="buttons">
-                    <MapTypeButton name="Api Key" auth="ApiKey" selectedAuth={this.state.authenticationMethod} changeAuth={this.changeLayer} />
-                    <MapTypeButton name="Client Credentials" auth="ClientCredentials" selectedAuth={this.state.authenticationMethod} changeAuth={this.changeLayer} />
+                <div className="top-buttons">
+                    <MapTypeButton name="Api Key" auth="ApiKey" selectedAuth={this.state.authenticationMethod} changeAuth={this.setAuthMethod} />
+                    <MapTypeButton name="Client Credentials" auth="ClientCredentials" selectedAuth={this.state.authenticationMethod} changeAuth={this.setAuthMethod} />
+                </div>
+                <div className="bottom-buttons">
+                    <CompositeProductPickerComponent areProductsLoaded={this.state.productsLoaded} products={this.state.products} selectedProduct={this.state.selectedProduct}
+                        productChanged={this.selectedProductChanged} />
                 </div>
             </>
         );
     }
 
-    private changeLayer = (auth: AuthenticationMethods) => {
+    private setAuthMethod = (auth: AuthenticationMethods) => {
         if (this.layer) {
             this.layer.remove();
+            this.layer = undefined;
         }
 
         this.setState({ authenticationMethod: auth }, this.setupLayer);
     }
 
+    private getConfig = async () => {
+        const config = await httpClient.get(`${this.serverUrl}/config`);
+
+        if (config) {
+            this.setState({ apiBaseUrl: config.apiBaseUrl, apiKey: config.apiKey }, this.setupLayer);
+        }
+    }
+
+    private loadCompositeProducts = async () => {
+        const products = await httpClient.get(`${this.serverUrl}/products`) as ICompositeProductDetails[];
+        if (products) {
+            this.setState({ products, productsLoaded: true });
+            if (!this.state.selectedProduct && products.length) {
+                // Don't currently have a composite product, but we have one loaded, select one!
+                this.selectedProductChanged(products[0]);
+            }
+        }
+    }
+
+    private selectedProductChanged = (newProduct: ICompositeProductDetails) => {
+        this.setState({ selectedProduct: newProduct }, this.createLayer);
+    }
+
     private setupLayer = async () => {
+        if (!this.state.apiBaseUrl) {
+            return;
+        }
+
+        if (this.state.authenticationMethod === 'ClientCredentials' && !this.state.accessToken) {
+            await this.getClientCredentialsToken();
+        }
+
         const auth = this.getAuthQueryParam();
 
-        // Retrieve the tile limits from the API.
-        const response = await fetch(`${this.apiBaseUrl}limits?${auth}`);
-        if (!response.ok) {
-            console.error(`${response.status} ${response.statusText}`);
-        } else {
-            let limits = await response.json();
-            // Now we have the limits, setup the layer
-            this.layer = L.tileLayer(`${this.apiBaseUrl}${this.imageryProductId}/tiles/{z}/{x}/{y}?format=image/jpeg&${auth}`, {
-                tms: true,
-                minZoom: limits.tilesLimits.minimumZoom,
-                maxZoom: limits.tilesLimits.maximumZoom,
-                attribution: 'Map data <a href="https://www.spookfish.com" target="_blank">&copy; Spookfish</a>'
-            })
-            .addTo(this.map);
+        if (auth) {
+            // Don't add the layer until we have composite products loaded
+            await this.loadCompositeProducts();
+            // Need to know the zoom limits so we can tell mapbox about the restrictions
+            const limits = await httpClient.get(`${this.state.apiBaseUrl}limits?${auth}`)
+            this.setState({ limits }, this.createLayer);
+        }   
+    }
+
+    private createLayer = () => {
+        if (this.state.limits && this.state.selectedProduct) {
+            const auth = this.getAuthQueryParam();
+
+            if (auth) {
+                if (this.layer) {
+                    this.layer.remove();
+                    this.layer = undefined;
+                }
+
+                // Now we have the limits, setup the layer
+                this.layer = L.tileLayer(`${this.state.apiBaseUrl}${this.state.selectedProduct.title}/tiles/{z}/{x}/{y}?format=image/jpeg&${auth}`, {
+                    tms: true,
+                    minZoom: this.state.limits.tilesLimits.minimumZoom,
+                    maxZoom: this.state.limits.tilesLimits.maximumZoom,
+                    attribution: 'Map data <a href="https://www.spookfish.com" target="_blank">&copy; Spookfish</a>'
+                })
+                .addTo(this.map);
+            }
         }
     }
 
     private getAuthQueryParam = () => {
         if (this.state.authenticationMethod === 'ClientCredentials') {
-            return 'access_token=' + this.state.accessToken;
+            return this.state.accessToken ? 'access_token=' + this.state.accessToken : undefined;
         } else {
-            return 'api_key=' + this.apiKey;
+            return this.state.apiKey ? 'api_key=' + this.state.apiKey : undefined;
         }
     }
 
     private getClientCredentialsToken = async () => {
         // From your map client, you will need to call a secured service that you have setup to get a short lived token from the Spookfish
         // server which can be used by this client
-        const response = await fetch('http://localhost:9090/api/token');
-        if (!response.ok) {
-            console.error(`${response.status} ${response.statusText}`);
-        } else {
-            let token = await response.json()
+        const token: IToken = await httpClient.get(`${this.serverUrl}/token`);
+        if (token) {
             this.setState(
                 { accessToken: token.access_token },
                 // After we've set the new access token, we need to reload the leaflet layer so it sends new requests with the token
-                () => this.changeLayer(this.state.authenticationMethod)
+                () => this.setAuthMethod(this.state.authenticationMethod)
             );
             // Our token will expire, so register a callback to get a new one for when it does
             setTimeout(this.getClientCredentialsToken, token.expires_in * 1000);
@@ -96,6 +165,10 @@ export class Map extends React.PureComponent<IMapProps, IMapState> {
     }
 
     private onMapClicked = async (click: L.LeafletMouseEvent) => {
+        if (!this.state.apiBaseUrl || !this.state.selectedProduct) {
+            return
+        }
+
         const zoom = this.map.getZoom();
         const crs = this.map.options.crs;
         const pixelOrigin = this.map.getPixelOrigin();
@@ -115,12 +188,11 @@ export class Map extends React.PureComponent<IMapProps, IMapState> {
         var ymax = 1 << zoom;
         tile.y = ymax - tile.y - 1;
         
-        const response = await fetch(`${this.apiBaseUrl}${this.imageryProductId}/tiles/${zoom}/${tile.x}/${tile.y}/info/${tilePixel.x}/${tilePixel.y}?${this.getAuthQueryParam()}`);
-        if (response.ok) {
-            let info = await response.json();
+        const info = await httpClient.get(`${this.state.apiBaseUrl}${this.state.selectedProduct.title}/tiles/${zoom}/${tile.x}/${tile.y}/info/${tilePixel.x}/${tilePixel.y}?${this.getAuthQueryParam()}`);
+        if (info) {
             L.popup()
                 .setLatLng(click.latlng)
-                .setContent(`Lat long ${click.latlng.lat}, ${click.latlng.lng} captured on ${info.captureDate}`)
+                .setContent(`<p>Location: <b>${click.latlng.lat}, ${click.latlng.lng}</b></p><p>Captured: <b>${info.captureDate}</b></p>`)
                 .openOn(this.map);
         }
     }
@@ -133,6 +205,12 @@ interface IMapProps {
 interface IMapState {
     authenticationMethod: AuthenticationMethods;
     accessToken: string;
+    apiKey: string;
+    apiBaseUrl: string
+    products: ICompositeProductDetails[]
+    productsLoaded: boolean
+    selectedProduct: ICompositeProductDetails
+    limits: ILimits
 }
 
 ReactDOM.render(<Map />, document.querySelector('.app'));
