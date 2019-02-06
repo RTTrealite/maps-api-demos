@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018, Spookfish Innovations Pty Ltd, Australia. All rights reserved.
+// Copyright (c) 2014-2019, EagleView. All rights reserved.
 
 const express = require('express');
 const request = require('request');
@@ -11,9 +11,9 @@ import { IToken } from '../shared/IToken';
 const app = express();
 
 // These credentials are the Client ID (user) and Client Secret (pass) obtained when you created a client
-// credentials key in the Spookfish Account Portal
 const clientId = '<YOUR CLIENT ID HERE>';
 const clientSecret = '<YOUR CLIENT SECRET HERE>';
+// credentials key in the EagleView Account Portal
 // This is the API Key obtained when you created an API 
 const apiKey = '<YOUR API KEY HERE>';
 const apiBaseUrl = 'https://api-dev.spookfish.com/api/imagery/v1/';

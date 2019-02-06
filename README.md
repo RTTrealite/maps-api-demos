@@ -1,20 +1,20 @@
-# Spookfish API Demos
-This is a small app that demonstrates using [leafletjs](http://leafletjs.com/) to connect to the Spookfish API Gateway. The example demonstrates connecting using both API Key and Client Credential Key methods. For more information about these methods, please see the [Spookfish API docs](https://apidocs.spookfish.com/#authentication-options).
+# EagleView Australia API Demos
+This is a small app that demonstrates using [leafletjs](http://leafletjs.com/) to connect to the EagleView Australia API Gateway. The example demonstrates connecting using both API Key and Client Credential Key methods. For more information about these methods, please see the [EagleView Australia API docs](https://apidocs.spookfish.com/#authentication-options).
 
 # Project Setup
 The code is in 2 main sections.
 - **Client**: Contains a small React application with a leaflet client. You can choose between getting tiles using either an API Key or [Client Credentials](https://www.oauth.com/oauth2-servers/access-tokens/client-credentials/).
-- **Server**: Contains a small Express application which, using your client credentials, requests a short-lived token from Spookfish which can then be served to clients.
+- **Server**: Contains a small Express application which, using your client credentials, requests a short-lived token from EagleView Australia which can then be served to clients.
 
 ## Setting up the keys
-Ones you have obtained the keys you want from the [Spookfish Account Portal](https://account.spookfish.com/account#/apps), you will need to add them to this demo app.
+Ones you have obtained the keys you want from the [EagleView Australia Account Portal](https://account.spookfish.com/account#/apps), you will need to add them to this demo app.
 
 ### API Key
-Using an API key provides quick, simple integration with Spookfish, at the cost of looser security. This may be appropriate in scenarios where an IP restriction can be added (e.g., running an application on an intranet with a limited pool of public IPs), or for quick prototyping work. It is added directly into the client. Open up `client/entry.tsx` and set the `apiKey` property to be your API Key.
+Using an API key provides quick, simple integration with EagleView Australia, at the cost of looser security. This may be appropriate in scenarios where an IP restriction can be added (e.g., running an application on an intranet with a limited pool of public IPs), or for quick prototyping work. It is added directly into the client. Open up `client/entry.tsx` and set the `apiKey` property to be your API Key.
 ![Set API Key](/docs/set_api_key.png)
 
 ### Client Credentials
-The client credentials option is more secure, as it requires both an ID and Secret to retrieve a token. Generally, you'd want to secure access to your own token endpoint by authenticating your own users. Once they are authenticated, you can provide them access to your Spookfish token. This demo app shows a node server which will use the client credentials to get a short lived token, and then return that to the authenticated user. To setup your client credential information in this demo, open up `server/server.js` and setup your client id and secret.
+The client credentials option is more secure, as it requires both an ID and Secret to retrieve a token. Generally, you'd want to secure access to your own token endpoint by authenticating your own users. Once they are authenticated, you can provide them access to your EagleView Australia token. This demo app shows a node server which will use the client credentials to get a short lived token, and then return that to the authenticated user. To setup your client credential information in this demo, open up `server/server.js` and setup your client id and secret.
 
 **IMPORTANT:** This is just a demo app, so for ease of use the client secret is located in code so you can see it working. But for security reasons you shouldn't check-in secrets into your source repository, or have it recorded in plain text when deployed to a server. You should treat this secret like a password and access it securely depending on your implementation.
 
@@ -44,7 +44,7 @@ npm run dev
 
 # API Key
 
-There isn't much too this really given there is no secret involved. You just tell leaflet about the Spookfish imagery URL with the API key embedded, and you are good to go. You will need to ensure that you have your localhost setup as an allowed referrer for your API Key in the portal. You can find the URL when you start this demo project. The server will always start on port 9090, the client (the one you need) could change.
+There isn't much too this really given there is no secret involved. You just tell leaflet about the EagleView Australia imagery URL with the API key embedded, and you are good to go. You will need to ensure that you have your localhost setup as an allowed referrer for your API Key in the portal. You can find the URL when you start this demo project. The server will always start on port 9090, the client (the one you need) could change.
 ![Referrer URL](/docs/referrer.png)
 
 However this simplicity comes at the cost of security. Everyone who loads your application can see the API Key and theoretically also use it. We give you the tools to restrict access to your API key by restricting access to them to particular referrers and optionally, IP address ranges. It is your responsibility to protect your API key appropriately; if you can't, it is worth considering whether the client credentials approach is more appropriate. If your API Key is misused, the only way to stop it would be to revoke the key and create a new one.
@@ -56,10 +56,10 @@ A Client Credentials Key is the recommended approach, as it allows you to hide y
 ## Server Implementation
 
 It looks like there is a bit going on here, but this all boils down to a few steps:
-1. Not shown in this demo app, but firstly you should authenticate the user and ensure they are authorised (according to your rules) to get a token to call the Spookfish API
+1. Not shown in this demo app, but firstly you should authenticate the user and ensure they are authorised (according to your rules) to get a token to call the EagleView Australia API
 1. Check to see if we have a token which hasn't expired
 1. If we don't, grab a write lock (as we only need one token)
-1. Go grab the token from Spookfish login server using your client credentials key
+1. Go grab the token from EagleView Australia login server using your client credentials key
 1. Store it and return it to your user.
 
 There are other things not shown in this demo that you should also consider:

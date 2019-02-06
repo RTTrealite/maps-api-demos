@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018, Spookfish Innovations Pty Ltd, Australia. All rights reserved.
+// Copyright (c) 2014-2019, EagleView. All rights reserved.
 
 import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -134,7 +134,7 @@ export class Map extends React.PureComponent<IMapProps, IMapState> {
                     tms: true,
                     minZoom: this.state.limits.tilesLimits.minimumZoom,
                     maxZoom: this.state.limits.tilesLimits.maximumZoom,
-                    attribution: 'Map data <a href="https://www.spookfish.com" target="_blank">&copy; Spookfish</a>'
+                    attribution: 'Map data <a href="https://www.spookfish.com" target="_blank">&copy; EagleView</a>'
                 })
                 .addTo(this.map);
             }
@@ -150,7 +150,7 @@ export class Map extends React.PureComponent<IMapProps, IMapState> {
     }
 
     private getClientCredentialsToken = async () => {
-        // From your map client, you will need to call a secured service that you have setup to get a short lived token from the Spookfish
+        // From your map client, you will need to call a secured service that you have setup to get a short lived token from the EagleView Australia
         // server which can be used by this client
         const token: IToken = await httpClient.get(`${this.serverUrl}/token`);
         if (token) {
@@ -184,7 +184,7 @@ export class Map extends React.PureComponent<IMapProps, IMapState> {
         const tileCorner = tile.multiplyBy(tileSize).subtract(pixelOrigin);
         const tilePixel = layerPoint.subtract(pixelOrigin).subtract(tileCorner);
 
-        // Spookfish is using TMS, so need to flip the Y-coordinates
+        // EagleView Australia is using TMS, so need to flip the Y-coordinates
         var ymax = 1 << zoom;
         tile.y = ymax - tile.y - 1;
         

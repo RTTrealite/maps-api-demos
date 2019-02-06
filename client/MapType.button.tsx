@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018, Spookfish Innovations Pty Ltd, Australia. All rights reserved.
+// Copyright (c) 2014-2019, EagleView. All rights reserved.
 
 import * as React from 'react';
 import { AuthenticationMethods } from './authTypes';
