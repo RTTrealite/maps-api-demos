@@ -131,7 +131,6 @@ export class Map extends React.PureComponent<IMapProps, IMapState> {
 
                 // Now we have the limits, setup the layer
                 this.layer = L.tileLayer(`${this.state.apiBaseUrl}${this.state.selectedProduct.title}/tiles/{z}/{x}/{y}?format=image/jpeg&${auth}`, {
-                    tms: true,
                     minZoom: this.state.limits.tilesLimits.minimumZoom,
                     maxZoom: this.state.limits.tilesLimits.maximumZoom,
                     attribution: 'Map data <a href="https://www.spookfish.com" target="_blank">&copy; EagleView</a>'
@@ -184,10 +183,6 @@ export class Map extends React.PureComponent<IMapProps, IMapState> {
         const tileCorner = tile.multiplyBy(tileSize).subtract(pixelOrigin);
         const tilePixel = layerPoint.subtract(pixelOrigin).subtract(tileCorner);
 
-        // EagleView Australia is using TMS, so need to flip the Y-coordinates
-        var ymax = 1 << zoom;
-        tile.y = ymax - tile.y - 1;
-        
         const info = await httpClient.get(`${this.state.apiBaseUrl}${this.state.selectedProduct.title}/tiles/${zoom}/${tile.x}/${tile.y}/info/${tilePixel.x}/${tilePixel.y}?${this.getAuthQueryParam()}`);
         if (info) {
             L.popup()
