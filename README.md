@@ -10,11 +10,11 @@ The code is in 2 main sections.
 Ones you have obtained the keys you want from the [EagleView Australia Account Portal](https://account.spookfish.com/account#/apps), you will need to add them to this demo app.
 
 ### API Key
-Using an API key provides quick, simple integration with EagleView Australia, at the cost of looser security. This may be appropriate in scenarios where an IP restriction can be added (e.g., running an application on an intranet with a limited pool of public IPs), or for quick prototyping work. It is added directly into the client. Open up `client/entry.tsx` and set the `apiKey` property to be your API Key.
+Using an API key provides quick, simple integration with EagleView Australia, at the cost of looser security. This may be appropriate in scenarios where an IP restriction can be added (e.g., running an application on an intranet with a limited pool of public IPs), or for quick prototyping work. It is added directly into the client. Open up `server/server.ts` and set the `apiKey` property to be your API Key.
 ![Set API Key](/docs/set_api_key.png)
 
 ### Client Credentials
-The client credentials option is more secure, as it requires both an ID and Secret to retrieve a token. Generally, you'd want to secure access to your own token endpoint by authenticating your own users. Once they are authenticated, you can provide them access to your EagleView Australia token. This demo app shows a node server which will use the client credentials to get a short lived token, and then return that to the authenticated user. To setup your client credential information in this demo, open up `server/server.js` and setup your client id and secret.
+The client credentials option is more secure, as it requires both an ID and Secret to retrieve a token. Generally, you'd want to secure access to your own token endpoint by authenticating your own users. Once they are authenticated, you can provide them access to your EagleView Australia token. This demo app shows a node server which will use the client credentials to get a short lived token, and then return that to the authenticated user. To setup your client credential information in this demo, open up `server/server.ts` and setup your client id and secret.
 
 **IMPORTANT:** This is just a demo app, so for ease of use the client secret is located in code so you can see it working. But for security reasons you shouldn't check-in secrets into your source repository, or have it recorded in plain text when deployed to a server. You should treat this secret like a password and access it securely depending on your implementation.
 
