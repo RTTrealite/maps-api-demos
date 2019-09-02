@@ -1,5 +1,5 @@
 # EagleView Australia API Demos
-This is a small app that demonstrates using [leafletjs](http://leafletjs.com/) to connect to the EagleView Australia API Gateway. The example demonstrates connecting using both API Key and Client Credential Key methods. For more information about these methods, please see the [EagleView Australia API docs](https://apidocs.spookfish.com/#authentication-options).
+This is a small app that demonstrates using [leafletjs](http://leafletjs.com/) to connect to the EagleView Australia API Gateway. The example demonstrates connecting using both API Key and Client Credential Key methods. For more information about these methods, please see the [EagleView Australia API docs](https://apidocs.au.eagleview.com/#authentication-options).
 
 # Project Setup
 The code is in 2 main sections.
@@ -7,7 +7,7 @@ The code is in 2 main sections.
 - **Server**: Contains a small Express application which, using your client credentials, requests a short-lived token from EagleView Australia which can then be served to clients.
 
 ## Setting up the keys
-Ones you have obtained the keys you want from the [EagleView Australia Account Portal](https://account.spookfish.com/account#/apps), you will need to add them to this demo app.
+Ones you have obtained the keys you want from the [EagleView Australia Account Portal](https://account.au.eagleview.com/account#/apps), you will need to add them to this demo app.
 
 ### API Key
 Using an API key provides quick, simple integration with EagleView Australia, at the cost of looser security. This may be appropriate in scenarios where an IP restriction can be added (e.g., running an application on an intranet with a limited pool of public IPs), or for quick prototyping work. It is added directly into the client. Open up `server/server.ts` and set the `apiKey` property to be your API Key.

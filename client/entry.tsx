@@ -133,7 +133,7 @@ export class Map extends React.PureComponent<IMapProps, IMapState> {
                 this.layer = L.tileLayer(`${this.state.apiBaseUrl}${this.state.selectedProduct.title}/tiles/{z}/{x}/{y}?format=image/jpeg&${auth}`, {
                     minZoom: this.state.limits.tilesLimits.minimumZoom,
                     maxZoom: this.state.limits.tilesLimits.maximumZoom,
-                    attribution: 'Map data <a href="https://www.spookfish.com" target="_blank">&copy; EagleView</a>'
+                    attribution: 'Map data <a href="https://au.eagleview.com" target="_blank">&copy; EagleView</a>'
                 })
                 .addTo(this.map);
             }

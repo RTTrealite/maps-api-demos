@@ -16,8 +16,8 @@ const clientSecret = '<YOUR CLIENT SECRET HERE>';
 // credentials key in the EagleView Account Portal
 // This is the API Key obtained when you created an API 
 const apiKey = '<YOUR API KEY HERE>';
-const apiBaseUrl = 'https://api.spookfish.com/api/imagery/v1/';
-const authBaseUrl = 'https://login.spookfish.com/identity/';
+const apiBaseUrl = 'https://api.au.eagleview.com/api/imagery/v1/';
+const authBaseUrl = 'https://internalapi.au.eagleview.com/identity/';
 
 app.use(cors());
 
